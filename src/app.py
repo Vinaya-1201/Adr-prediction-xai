@@ -5,7 +5,7 @@ import io
 import sys
 import gdown
 from sklearn.preprocessing import LabelEncoder
-from backend.predict import predict
+
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
