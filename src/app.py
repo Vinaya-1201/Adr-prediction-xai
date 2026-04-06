@@ -187,12 +187,9 @@ if predict:
             for drug, dose in drug_doses.items()
         ]
     }
-
+from backend.predict import predict
     try:
-        response = requests.post(
-            "http://localhost:8001/predict",
-            json=payload
-        )
+        response = predict(payload)
 
         if response.status_code == 200:
 
