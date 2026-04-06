@@ -190,7 +190,7 @@ if predict:
 
     try:
         response = requests.post(
-            "http://localhost:8000/predict",
+            "http://localhost:8001/predict",
             json=payload
         )
 
