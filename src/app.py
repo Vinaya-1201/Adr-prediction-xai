@@ -3,30 +3,34 @@ import pandas as pd
 import os
 import io
 import sys
+import gdown
 from sklearn.preprocessing import LabelEncoder
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-import gdown
 
-# FIX IMPORT PATH
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(BASE_DIR)
+# --------------------------------------------------
+# FIX BACKEND IMPORT PATH
+# --------------------------------------------------
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+sys.path.insert(0, ROOT_DIR)
 
 from backend.predict import predict
 
+# --------------------------------------------------
+# DOWNLOAD SIDER IF NOT EXISTS
+# --------------------------------------------------
+data_dir = os.path.join(ROOT_DIR, "data")
+os.makedirs(data_dir, exist_ok=True)
 
-# download sider if not exists
-os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
-
-sider_path = os.path.join(BASE_DIR, "data", "sider.csv")
+sider_path = os.path.join(data_dir, "sider.csv")
 
 if not os.path.exists(sider_path):
     url = "https://drive.google.com/uc?id=1NjuGqaKElyeY-ovqTyEfr3xtXY-w7rY8"
     gdown.download(url, sider_path, quiet=False)
-
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -37,56 +41,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# --------------------------------------------------
-# STYLING
-# --------------------------------------------------
-st.markdown("""
-<style>
-.stApp {
-    background: linear-gradient(135deg, #ffe4ec, #fff1f6);
-    font-family: 'Segoe UI', sans-serif;
-}
-
-.main-title {
-    font-size: 50px;
-    font-weight: 800;
-    color: #9d174d;
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.card {
-    background: white;
-    padding: 35px;
-    border-radius: 20px;
-    box-shadow: 0px 10px 30px rgba(0,0,0,0.05);
-    margin-bottom: 35px;
-}
-
-.stButton>button {
-    background-color: #ec4899;
-    color: white;
-    font-size: 22px;
-    padding: 12px 50px;
-    border-radius: 40px;
-    border: none;
-}
-
-.result-card {
-    text-align: center;
-    padding: 40px;
-    border-radius: 20px;
-    margin-top: 30px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="main-title">💖 Personalized ADR Risk Assessment</div>', unsafe_allow_html=True)
+st.title("💖 Personalized ADR Risk Assessment")
 
 # --------------------------------------------------
 # LOAD DATA
 # --------------------------------------------------
-data = pd.read_csv(os.path.join(BASE_DIR, "data", "drug_adr_encoded.csv"))
+data = pd.read_csv(os.path.join(data_dir, "drug_adr_encoded.csv"))
 
 drug_encoder = LabelEncoder()
 drug_encoder.fit(data['drug_name'])
@@ -102,36 +62,17 @@ def generate_pdf_report(patient_data, medications, risk_percent, level, recommen
     styles = getSampleStyleSheet()
 
     elements.append(Paragraph("Personalized ADR Clinical Report", styles["Heading1"]))
-    elements.append(Spacer(1, 0.3 * inch))
-
-    elements.append(Paragraph("<b>Patient Information:</b>", styles["Heading2"]))
-    elements.append(Spacer(1, 0.2 * inch))
+    elements.append(Spacer(1, 12))
 
     for key, value in patient_data.items():
         elements.append(Paragraph(f"{key}: {value}", styles["Normal"]))
-        elements.append(Spacer(1, 0.1 * inch))
+        elements.append(Spacer(1, 6))
 
-    elements.append(Spacer(1, 0.3 * inch))
-    elements.append(HRFlowable(width="100%", thickness=1, color=colors.grey))
-    elements.append(Spacer(1, 0.3 * inch))
+    elements.append(Spacer(1, 12))
 
-    elements.append(Paragraph("<b>Medications:</b>", styles["Heading2"]))
-    elements.append(Spacer(1, 0.2 * inch))
-
-    for med in medications:
-        elements.append(Paragraph(med, styles["Normal"]))
-        elements.append(Spacer(1, 0.1 * inch))
-
-    elements.append(Spacer(1, 0.3 * inch))
-    elements.append(HRFlowable(width="100%", thickness=1, color=colors.grey))
-    elements.append(Spacer(1, 0.3 * inch))
-
-    elements.append(Paragraph("<b>Risk Assessment:</b>", styles["Heading2"]))
-    elements.append(Spacer(1, 0.2 * inch))
-
-    elements.append(Paragraph(f"Predicted ADR Risk: {risk_percent}%", styles["Normal"]))
-    elements.append(Paragraph(f"Risk Level: {level}", styles["Normal"]))
-    elements.append(Paragraph(f"Recommendation: {recommendation}", styles["Normal"]))
+    elements.append(Paragraph(f"Risk: {risk_percent}%", styles["Heading2"]))
+    elements.append(Paragraph(level, styles["Normal"]))
+    elements.append(Paragraph(recommendation, styles["Normal"]))
 
     doc.build(elements)
     buffer.seek(0)
@@ -144,26 +85,30 @@ def generate_pdf_report(patient_data, medications, risk_percent, level, recommen
 st.subheader("👤 Basic Information")
 
 age = st.slider("Age", 1, 100, 50)
-gender = st.radio("Gender", ["Male", "Female"], horizontal=True)
-bp = st.slider("Blood Pressure (mmHg)", 80, 200, 120)
+gender = st.radio("Gender", ["Male", "Female"])
+bp = st.slider("Blood Pressure", 80, 200, 120)
 
 st.subheader("🩺 Health Background")
 
-diabetes = st.radio("Diabetes", ["No", "Yes"], horizontal=True) == "Yes"
-smoking_status = st.radio("Smoking Status", ["Never", "Former", "Current"], horizontal=True)
-smoking = smoking_status in ["Former", "Current"]
-liver_disease = st.radio("Liver Disease", ["No", "Yes"], horizontal=True) == "Yes"
-gene_risk = st.radio("Genetic Risk Factors", ["No", "Yes"], horizontal=True) == "Yes"
-family_history = st.radio("Family History of Drug Reaction", ["No", "Yes"], horizontal=True) == "Yes"
+diabetes = st.checkbox("Diabetes")
+smoking = st.checkbox("Smoking")
+liver_disease = st.checkbox("Liver Disease")
+gene_risk = st.checkbox("Genetic Risk")
+family_history = st.checkbox("Family History")
 
-st.subheader("💊 Current Medications")
+st.subheader("💊 Medications")
 
-selected_drugs = st.multiselect("Select Medications", sorted(drug_encoder.classes_))
+selected_drugs = st.multiselect(
+    "Select drugs",
+    sorted(drug_encoder.classes_)
+)
+
 drug_doses = {}
 
 for drug in selected_drugs:
-    dose = st.number_input(f"{drug} Dose (mg)", min_value=1, max_value=2000, value=100)
+    dose = st.number_input(f"{drug} dose", 1, 2000, 100)
     drug_doses[drug] = dose
+
 
 predict_btn = st.button("🚀 Predict ADR Risk")
 
@@ -173,7 +118,7 @@ predict_btn = st.button("🚀 Predict ADR Risk")
 if predict_btn:
 
     if len(selected_drugs) == 0:
-        st.warning("⚠ Please select at least one medication.")
+        st.warning("Select at least one drug")
         st.stop()
 
     payload = {
@@ -185,8 +130,8 @@ if predict_btn:
         "gene_risk": gene_risk,
         "family_history": family_history,
         "drugs": [
-            {"name": drug, "dose": dose}
-            for drug, dose in drug_doses.items()
+            {"name": d, "dose": drug_doses[d]}
+            for d in selected_drugs
         ]
     }
 
@@ -199,6 +144,31 @@ if predict_btn:
 
         st.success(f"{risk_percent}% - {level}")
         st.write(recommendation)
+
+        patient_info = {
+            "Age": age,
+            "Gender": gender,
+            "BP": bp
+        }
+
+        meds = [
+            f"{d} - {drug_doses[d]} mg"
+            for d in selected_drugs
+        ]
+
+        pdf = generate_pdf_report(
+            patient_info,
+            meds,
+            risk_percent,
+            level,
+            recommendation
+        )
+
+        st.download_button(
+            "Download Report",
+            pdf,
+            file_name="ADR_Report.pdf"
+        )
 
     except Exception as e:
         st.error(str(e))
