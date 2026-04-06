@@ -164,7 +164,6 @@ for drug in selected_drugs:
 st.markdown('</div>', unsafe_allow_html=True)
 
 predict = st.button("🚀 Predict ADR Risk")
-
 # --------------------------------------------------
 # PREDICTION (API CALL)
 # --------------------------------------------------
@@ -187,14 +186,16 @@ if predict:
             for drug, dose in drug_doses.items()
         ]
     }
-try:
-    response = requests.post(
-        "http://localhost:8001/predict",
-        json=payload
-    )
 
-    st.write(response.status_code)
-    st.write(response.text)
+    try:
+        response = requests.post(
+            "http://localhost:8001/predict",
+            json=payload
+        )
+
+        st.write(response.status_code)
+        st.write(response.text)
+
         if response.status_code == 200:
 
             result = response.json()
@@ -212,35 +213,6 @@ try:
                 <h2>{recommendation}</h2>
             </div>
             """, unsafe_allow_html=True)
-
-            # PDF
-            patient_info = {
-                "Age": age,
-                "Gender": gender,
-                "Blood Pressure": f"{bp} mmHg",
-                "Diabetes": diabetes,
-                "Smoking": smoking_status,
-                "Liver Disease": liver_disease,
-                "Genetic Risk": gene_risk,
-                "Family History": family_history
-            }
-
-            medications = [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()]
-
-            pdf_buffer = generate_pdf_report(
-                patient_info,
-                medications,
-                risk_percent,
-                level,
-                recommendation
-            )
-
-            st.download_button(
-                label="📄 Download Clinical Report",
-                data=pdf_buffer,
-                file_name="ADR_Clinical_Report.pdf",
-                mime="application/pdf"
-            )
 
         else:
             st.error("Backend error. Check FastAPI server.")
