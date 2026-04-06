@@ -11,7 +11,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 import os
 import gdown
-
+from backend.predict import predict
 os.makedirs("data", exist_ok=True)
 
 if not os.path.exists("data/sider.csv"):
@@ -165,7 +165,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 predict = st.button("🚀 Predict ADR Risk")
 # --------------------------------------------------
-# PREDICTION (API CALL)
+# PREDICTION
 # --------------------------------------------------
 if predict:
 
@@ -188,34 +188,50 @@ if predict:
     }
 
     try:
-        response = requests.post(
-            "http://localhost:8001/predict",
-            json=payload
+        result = predict(payload)
+
+        risk_percent = result["risk_percent"]
+        level = result["risk_level"]
+        recommendation = result["recommendation"]
+
+        color = "#16a34a" if level == "Low Risk" else "#f59e0b" if level == "Moderate Risk" else "#dc2626"
+
+        st.markdown(f"""
+        <div class="card result-card">
+            <h1 style="font-size:70px; color:{color};">{risk_percent}%</h1>
+            <h3>{level}</h3>
+            <h2>{recommendation}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # PDF
+        patient_info = {
+            "Age": age,
+            "Gender": gender,
+            "Blood Pressure": f"{bp} mmHg",
+            "Diabetes": diabetes,
+            "Smoking": smoking_status,
+            "Liver Disease": liver_disease,
+            "Genetic Risk": gene_risk,
+            "Family History": family_history
+        }
+
+        medications = [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()]
+
+        pdf_buffer = generate_pdf_report(
+            patient_info,
+            medications,
+            risk_percent,
+            level,
+            recommendation
         )
 
-        st.write(response.status_code)
-        st.write(response.text)
-
-        if response.status_code == 200:
-
-            result = response.json()
-
-            risk_percent = result["risk_percent"]
-            level = result["risk_level"]
-            recommendation = result["recommendation"]
-
-            color = "#16a34a" if level == "Low Risk" else "#f59e0b" if level == "Moderate Risk" else "#dc2626"
-
-            st.markdown(f"""
-            <div class="card result-card">
-                <h1 style="font-size:70px; color:{color};">{risk_percent}%</h1>
-                <h3>{level}</h3>
-                <h2>{recommendation}</h2>
-            </div>
-            """, unsafe_allow_html=True)
-
-        else:
-            st.error("Backend error. Check FastAPI server.")
+        st.download_button(
+            label="📄 Download Clinical Report",
+            data=pdf_buffer,
+            file_name="ADR_Clinical_Report.pdf",
+            mime="application/pdf"
+        )
 
     except Exception as e:
         st.error(f"Error: {e}")
