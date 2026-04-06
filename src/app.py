@@ -5,117 +5,116 @@ import io
 import sys
 import gdown
 from sklearn.preprocessing import LabelEncoder
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.lib.units import inch
 
-# --------------------------------------------------
-# FIX BACKEND IMPORT PATH
-# --------------------------------------------------
+# -----------------------------
+# FIX IMPORT PATH
+# -----------------------------
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
-sys.path.insert(0, ROOT_DIR)
+sys.path.append(ROOT_DIR)
 
 from backend.predict import predict
 
-# --------------------------------------------------
-# DOWNLOAD SIDER IF NOT EXISTS
-# --------------------------------------------------
+# -----------------------------
+# DOWNLOAD SIDER DATA
+# -----------------------------
 data_dir = os.path.join(ROOT_DIR, "data")
 os.makedirs(data_dir, exist_ok=True)
 
 sider_path = os.path.join(data_dir, "sider.csv")
 
 if not os.path.exists(sider_path):
-    url = "https://drive.google.com/uc?id=1NjuGqaKElyeY-ovqTyEfr3xtXY-w7rY8"
-    gdown.download(url, sider_path, quiet=False)
+    gdown.download(
+        "https://drive.google.com/uc?id=1NjuGqaKElyeY-ovqTyEfr3xtXY-w7rY8",
+        sider_path,
+        quiet=False
+    )
 
-# --------------------------------------------------
+# -----------------------------
 # PAGE CONFIG
-# --------------------------------------------------
+# -----------------------------
 st.set_page_config(
-    page_title="Personalized ADR Risk Assessment",
-    page_icon="💖",
+    page_title="ADR Risk Prediction",
+    page_icon="💊",
     layout="wide"
 )
 
-st.title("💖 Personalized ADR Risk Assessment")
+st.title("💊 Personalized ADR Risk Prediction")
 
-# --------------------------------------------------
+# -----------------------------
 # LOAD DATA
-# --------------------------------------------------
+# -----------------------------
 data = pd.read_csv(os.path.join(data_dir, "drug_adr_encoded.csv"))
 
 drug_encoder = LabelEncoder()
-drug_encoder.fit(data['drug_name'])
+drug_encoder.fit(data["drug_name"])
 
-# --------------------------------------------------
-# PDF GENERATOR
-# --------------------------------------------------
-def generate_pdf_report(patient_data, medications, risk_percent, level, recommendation):
+# -----------------------------
+# PDF REPORT
+# -----------------------------
+def create_pdf(patient, risk, level):
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    elements = []
     styles = getSampleStyleSheet()
 
-    elements.append(Paragraph("Personalized ADR Clinical Report", styles["Heading1"]))
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+
+    elements.append(Paragraph("ADR Risk Report", styles["Heading1"]))
     elements.append(Spacer(1, 12))
 
-    for key, value in patient_data.items():
-        elements.append(Paragraph(f"{key}: {value}", styles["Normal"]))
+    for k, v in patient.items():
+        elements.append(Paragraph(f"{k}: {v}", styles["Normal"]))
         elements.append(Spacer(1, 6))
 
     elements.append(Spacer(1, 12))
-
-    elements.append(Paragraph(f"Risk: {risk_percent}%", styles["Heading2"]))
+    elements.append(Paragraph(f"Risk: {risk}%", styles["Heading2"]))
     elements.append(Paragraph(level, styles["Normal"]))
-    elements.append(Paragraph(recommendation, styles["Normal"]))
 
     doc.build(elements)
     buffer.seek(0)
     return buffer
 
 
-# --------------------------------------------------
-# INPUT UI
-# --------------------------------------------------
-st.subheader("👤 Basic Information")
+# -----------------------------
+# UI INPUT
+# -----------------------------
+st.subheader("Patient Information")
 
 age = st.slider("Age", 1, 100, 50)
-gender = st.radio("Gender", ["Male", "Female"])
 bp = st.slider("Blood Pressure", 80, 200, 120)
-
-st.subheader("🩺 Health Background")
 
 diabetes = st.checkbox("Diabetes")
 smoking = st.checkbox("Smoking")
-liver_disease = st.checkbox("Liver Disease")
-gene_risk = st.checkbox("Genetic Risk")
-family_history = st.checkbox("Family History")
+liver = st.checkbox("Liver Disease")
+genetic = st.checkbox("Genetic Risk")
+family = st.checkbox("Family History")
 
-st.subheader("💊 Medications")
+st.subheader("Select Drugs")
 
 selected_drugs = st.multiselect(
-    "Select drugs",
+    "Drugs",
     sorted(drug_encoder.classes_)
 )
 
-drug_doses = {}
+dose_dict = {}
 
 for drug in selected_drugs:
-    dose = st.number_input(f"{drug} dose", 1, 2000, 100)
-    drug_doses[drug] = dose
+    dose_dict[drug] = st.number_input(
+        f"{drug} dose",
+        1,
+        2000,
+        100
+    )
 
-
-predict_btn = st.button("🚀 Predict ADR Risk")
-
-# --------------------------------------------------
-# PREDICTION
-# --------------------------------------------------
-if predict_btn:
+# -----------------------------
+# PREDICT BUTTON
+# -----------------------------
+if st.button("🚀 Predict ADR Risk"):
 
     if len(selected_drugs) == 0:
         st.warning("Select at least one drug")
@@ -126,11 +125,11 @@ if predict_btn:
         "bp": bp,
         "diabetes": diabetes,
         "smoking": smoking,
-        "liver_disease": liver_disease,
-        "gene_risk": gene_risk,
-        "family_history": family_history,
+        "liver_disease": liver,
+        "gene_risk": genetic,
+        "family_history": family,
         "drugs": [
-            {"name": d, "dose": drug_doses[d]}
+            {"name": d, "dose": dose_dict[d]}
             for d in selected_drugs
         ]
     }
@@ -138,31 +137,19 @@ if predict_btn:
     try:
         result = predict(payload)
 
-        risk_percent = result["risk_percent"]
+        risk = result["risk_percent"]
         level = result["risk_level"]
-        recommendation = result["recommendation"]
 
-        st.success(f"{risk_percent}% - {level}")
-        st.write(recommendation)
+        st.success(f"ADR Risk: {risk}%")
+        st.info(level)
 
-        patient_info = {
+        patient = {
             "Age": age,
-            "Gender": gender,
-            "BP": bp
+            "BP": bp,
+            "Drugs": ", ".join(selected_drugs)
         }
 
-        meds = [
-            f"{d} - {drug_doses[d]} mg"
-            for d in selected_drugs
-        ]
-
-        pdf = generate_pdf_report(
-            patient_info,
-            meds,
-            risk_percent,
-            level,
-            recommendation
-        )
+        pdf = create_pdf(patient, risk, level)
 
         st.download_button(
             "Download Report",
