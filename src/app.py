@@ -195,10 +195,6 @@ try:
 
     st.write(response.status_code)
     st.write(response.text)
-
-except Exception as e:
-    st.error(e)
-
         if response.status_code == 200:
 
             result = response.json()
