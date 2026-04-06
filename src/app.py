@@ -2,15 +2,21 @@ import streamlit as st
 import pandas as pd
 import os
 import io
+import sys
 from sklearn.preprocessing import LabelEncoder
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
-import os
 import gdown
+
+# ADD THIS (important)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from backend.predict import predict
+
+
 os.makedirs("data", exist_ok=True)
 
 if not os.path.exists("data/sider.csv"):
