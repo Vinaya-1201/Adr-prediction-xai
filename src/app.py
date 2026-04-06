@@ -11,17 +11,23 @@ from reportlab.lib import colors
 from reportlab.lib.units import inch
 import gdown
 
-# ADD THIS (important)
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# FIX IMPORT PATH
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
 
 from backend.predict import predict
 
 
-os.makedirs("data", exist_ok=True)
+# download sider if not exists
+os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
 
-if not os.path.exists("data/sider.csv"):
+sider_path = os.path.join(BASE_DIR, "data", "sider.csv")
+
+if not os.path.exists(sider_path):
     url = "https://drive.google.com/uc?id=1NjuGqaKElyeY-ovqTyEfr3xtXY-w7rY8"
-    gdown.download(url, "data/sider.csv", quiet=False)
+    gdown.download(url, sider_path, quiet=False)
+
+
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
@@ -78,9 +84,8 @@ st.markdown("""
 st.markdown('<div class="main-title">💖 Personalized ADR Risk Assessment</div>', unsafe_allow_html=True)
 
 # --------------------------------------------------
-# LOAD DRUG LIST ONLY
+# LOAD DATA
 # --------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data = pd.read_csv(os.path.join(BASE_DIR, "data", "drug_adr_encoded.csv"))
 
 drug_encoder = LabelEncoder()
@@ -132,19 +137,16 @@ def generate_pdf_report(patient_data, medications, risk_percent, level, recommen
     buffer.seek(0)
     return buffer
 
+
 # --------------------------------------------------
 # INPUT UI
 # --------------------------------------------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("👤 Basic Information")
 
 age = st.slider("Age", 1, 100, 50)
 gender = st.radio("Gender", ["Male", "Female"], horizontal=True)
 bp = st.slider("Blood Pressure (mmHg)", 80, 200, 120)
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("🩺 Health Background")
 
 diabetes = st.radio("Diabetes", ["No", "Yes"], horizontal=True) == "Yes"
@@ -154,9 +156,6 @@ liver_disease = st.radio("Liver Disease", ["No", "Yes"], horizontal=True) == "Ye
 gene_risk = st.radio("Genetic Risk Factors", ["No", "Yes"], horizontal=True) == "Yes"
 family_history = st.radio("Family History of Drug Reaction", ["No", "Yes"], horizontal=True) == "Yes"
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("💊 Current Medications")
 
 selected_drugs = st.multiselect("Select Medications", sorted(drug_encoder.classes_))
@@ -166,13 +165,12 @@ for drug in selected_drugs:
     dose = st.number_input(f"{drug} Dose (mg)", min_value=1, max_value=2000, value=100)
     drug_doses[drug] = dose
 
-st.markdown('</div>', unsafe_allow_html=True)
+predict_btn = st.button("🚀 Predict ADR Risk")
 
-predict = st.button("🚀 Predict ADR Risk")
 # --------------------------------------------------
 # PREDICTION
 # --------------------------------------------------
-if predict:
+if predict_btn:
 
     if len(selected_drugs) == 0:
         st.warning("⚠ Please select at least one medication.")
@@ -199,44 +197,8 @@ if predict:
         level = result["risk_level"]
         recommendation = result["recommendation"]
 
-        color = "#16a34a" if level == "Low Risk" else "#f59e0b" if level == "Moderate Risk" else "#dc2626"
-
-        st.markdown(f"""
-        <div class="card result-card">
-            <h1 style="font-size:70px; color:{color};">{risk_percent}%</h1>
-            <h3>{level}</h3>
-            <h2>{recommendation}</h2>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # PDF
-        patient_info = {
-            "Age": age,
-            "Gender": gender,
-            "Blood Pressure": f"{bp} mmHg",
-            "Diabetes": diabetes,
-            "Smoking": smoking_status,
-            "Liver Disease": liver_disease,
-            "Genetic Risk": gene_risk,
-            "Family History": family_history
-        }
-
-        medications = [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()]
-
-        pdf_buffer = generate_pdf_report(
-            patient_info,
-            medications,
-            risk_percent,
-            level,
-            recommendation
-        )
-
-        st.download_button(
-            label="📄 Download Clinical Report",
-            data=pdf_buffer,
-            file_name="ADR_Clinical_Report.pdf",
-            mime="application/pdf"
-        )
+        st.success(f"{risk_percent}% - {level}")
+        st.write(recommendation)
 
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(str(e))
