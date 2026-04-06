@@ -8,3 +8,4 @@ matplotlib
 shap
 joblib
 gdown
+reportlab
