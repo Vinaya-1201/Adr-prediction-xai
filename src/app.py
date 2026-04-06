@@ -9,7 +9,14 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+import os
+import gdown
 
+os.makedirs("data", exist_ok=True)
+
+if not os.path.exists("data/sider.csv"):
+    url = "https://drive.google.com/uc?id=1NjuGqaKElyeY-ovqTyEfr3xtXY-w7rY8"
+    gdown.download(url, "data/sider.csv", quiet=False)
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
