@@ -188,8 +188,9 @@ if predict:
         ]
     }
 from backend.predict import predict
-    try:
-        response = predict(payload)
+
+try:
+    result = predict(payload)
 
         if response.status_code == 200:
 
