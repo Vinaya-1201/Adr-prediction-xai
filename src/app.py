@@ -885,7 +885,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
             st.plotly_chart(
     plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
     use_container_width=True,
-    key="shap_chart_1"
+    key=f"shap_chart_{idx}"
 )
         
         else:
@@ -930,7 +930,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                         }
 
                     st.plotly_chart(
-                        plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+    plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
     use_container_width=True,
-    key="shap_chart_2"
+    key=f"shap_chart_{idx}"
 )
