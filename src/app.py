@@ -682,14 +682,7 @@ if predict:
     }
 
     try:
-        response = requests.post(
-            "http://localhost:8000/predict",
-            json=payload
-        )
-
-        if response.status_code == 200:
-
-            result = response.json()
+        result = predict(payload)
 
             # Store in session state for persistence
             st.session_state.prediction_result = {
