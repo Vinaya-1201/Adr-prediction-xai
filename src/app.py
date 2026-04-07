@@ -656,12 +656,12 @@ for drug in selected_drugs:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-predict = st.button("🚀 Predict ADR Risk")
+predict_btn = st.button("🚀 Predict ADR Risk")
 
 # --------------------------------------------------
 # PREDICTION (API CALL)
 # --------------------------------------------------
-if predict:
+if predict_btn:
 
     if len(selected_drugs) == 0:
         st.warning("⚠ Please select at least one medication.")
