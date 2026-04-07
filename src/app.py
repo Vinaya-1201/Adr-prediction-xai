@@ -17,8 +17,6 @@ import gdown
 import sys
 import os
 
-sys.path.append(os.path.dirname(__file__))
-from predict import predict
 # create data folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data_dir = os.path.join(BASE_DIR, "data")
@@ -241,7 +239,50 @@ def generate_shap_explanation(age, bp, diabetes, smoking, liver_disease, gene_ri
     total_feature_risk = sum(feature_data.values())
     
     return feature_data, drug_risk, total_feature_risk
+def predict(payload):
 
+    age = payload["age"]
+    bp = payload["bp"]
+    diabetes = payload["diabetes"]
+    smoking = payload["smoking"]
+    liver = payload["liver_disease"]
+    gene = payload["gene_risk"]
+    family = payload["family_history"]
+    drugs = payload["drugs"]
+
+    risk = 5
+
+    risk += age * 0.2
+    risk += len(drugs) * 8
+
+    if diabetes:
+        risk += 10
+    if smoking:
+        risk += 7
+    if liver:
+        risk += 12
+    if gene:
+        risk += 9
+    if family:
+        risk += 6
+
+    risk = min(int(risk), 95)
+
+    if risk < 30:
+        level = "Low Risk"
+        recommendation = "Safe to continue medication."
+    elif risk < 60:
+        level = "Moderate Risk"
+        recommendation = "Monitor patient closely."
+    else:
+        level = "High Risk"
+        recommendation = "Consult doctor before continuing."
+
+    return {
+        "risk_percent": risk,
+        "risk_level": level,
+        "recommendation": recommendation
+    }
 def calculate_drug_specific_shap(drug_name, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history, actual_risk_prob=None):
     """Calculate SHAP values specific to a drug, normalized to actual model prediction"""
     
