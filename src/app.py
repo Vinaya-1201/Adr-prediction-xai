@@ -17,12 +17,9 @@ import gdown
 import sys
 import os
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+sys.path.append(os.path.dirname(__file__))
 
-sys.path.insert(0, ROOT_DIR)
-
-from src.predict import predict
+from predict import predict
 # create data folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data_dir = os.path.join(BASE_DIR, "data")
