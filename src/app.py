@@ -685,32 +685,32 @@ if predict:
         result = predict(payload)
 
             # Store in session state for persistence
-            st.session_state.prediction_result = {
-                "risk_probability": result.get("risk_probability", result["risk_percent"] / 100),
-                "risk_percent": result["risk_percent"],
-                "risk_level": result["risk_level"],
-                "recommendation": result["recommendation"],
-                "patient_info": {
-                    "Name": name,
-                    "Age": age,
-                    "Gender": gender,
-                    "Blood Pressure": f"{bp} mmHg",
-                    "Diabetes": diabetes,
-                    **({"Smoking": smoking_status} if smoking else {}),
-                    "Liver Disease": liver_disease,
-                    "Genetic Risk": gene_risk
-                },
-                "medications": [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()],
-                "selected_drugs": selected_drugs,
-                "name": name,
-                "age": age,
-                "bp": bp,
-                "diabetes": diabetes,
-                "smoking": smoking,
-                "liver_disease": liver_disease,
-                "gene_risk": gene_risk,
-                "family_history": family_history
-            }
+        st.session_state.prediction_result = {
+        "risk_probability": result.get("risk_probability", result["risk_percent"] / 100),
+        "risk_percent": result["risk_percent"],
+        "risk_level": result["risk_level"],
+        "recommendation": result["recommendation"],
+        "patient_info": {
+            "Name": name,
+            "Age": age,
+            "Gender": gender,
+            "Blood Pressure": f"{bp} mmHg",
+            "Diabetes": diabetes,
+            **({"Smoking": smoking_status} if smoking else {}),
+            "Liver Disease": liver_disease,
+            "Genetic Risk": gene_risk
+            },
+        "medications": [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()],
+        "selected_drugs": selected_drugs,
+        "name": name,
+        "age": age,
+        "bp": bp,
+        "diabetes": diabetes,
+        "smoking": smoking,
+        "liver_disease": liver_disease,
+        "gene_risk": gene_risk,
+        "family_history": family_history
+    }
 
     except Exception as e:
         st.error(f"Error: {e}")
