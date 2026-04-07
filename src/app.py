@@ -424,11 +424,33 @@ def get_drug_specific_info(drug_name):
         "disease_impacts": selected_diseases
     }
 
+def get_sider_diseases(drug_name):
+    try:
+        sider = pd.read_csv(sider_path)
 
+        drug_rows = sider[
+            sider["drug_name"].str.lower() == drug_name.lower()
+        ]
+
+        diseases = drug_rows["side_effect"].value_counts().head(6)
+
+        return [
+            {"disease": d, "base_weight": w}
+            for d, w in zip(diseases.index, diseases.values)
+        ]
+
+    except:
+        return None
 def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history, drug_adjusted_risk):
     """Return six disease-level impact percentages for a drug and patient profile."""
-    profile = DRUG_PROFILES.get(drug_name.lower(), get_drug_specific_info(drug_name))
-    disease_items = profile.get("disease_impacts", [])
+    sider_diseases = get_sider_diseases(drug_name)
+
+    if sider_diseases:
+        disease_items = sider_diseases
+    else:
+        profile = get_drug_specific_info(drug_name)
+        disease_items = profile.get("disease_impacts", [])
+    
 
     factor_multipliers = {
         "Age": 1.15 if age > 65 else 1.0,
