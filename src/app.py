@@ -907,11 +907,12 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                 for k, v in shap_vals.items()
             }
 
-            st.plotly_chart(
-    plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
-    use_container_width=True,
-    key="shap_chart_1"
-)
+            per_drug_risk = risk_probability / len(selected_drugs)
+
+            shap_vals, drug_adjusted_risk = calculate_drug_specific_shap(
+            drug, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history,
+            actual_risk_prob=per_drug_risk
+            )
         
         else:
             # Multiple drugs - show tabs with SHAP analysis for each
@@ -954,8 +955,9 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                         for k, v in shap_vals.items()
                         }
 
-                    st.plotly_chart(
-    plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
-    use_container_width=True,
-    key="shap_chart_2"
-)
+                    per_drug_risk = risk_probability / len(selected_drugs)
+
+                    shap_vals, drug_adjusted_risk = calculate_drug_specific_shap(
+                    drug, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history,
+                    actual_risk_prob=per_drug_risk
+                    )
