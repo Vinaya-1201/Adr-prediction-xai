@@ -709,7 +709,8 @@ smoking_status = st.radio("Smoking Status", ["Never", "Former", "Current"], hori
 smoking = smoking_status in ["Former", "Current"]
 liver_disease = st.radio("Liver Disease", ["No", "Yes"], horizontal=True) == "Yes"
 gene_risk = st.radio("Genetic Risk Factors", ["No", "Yes"], horizontal=True) == "Yes"
-family_history = False
+family_history = st.radio("Family History of Drug Reaction", ["No", "Yes"], horizontal=True) == "Yes"
+
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -751,27 +752,18 @@ if predict_btn:
     }
 
     try:
-        result = predict(payload)
+    result = predict(payload)
 
-            # Store in session state for persistence
-        st.session_state.prediction_result = {
-        "risk_probability": result.get("risk_probability", result["risk_percent"] / 100),
-        "risk_percent": result["risk_percent"],
-        "risk_level": result["risk_level"],
-        "recommendation": result["recommendation"],
-        "patient_info": {
-            "Name": name,
-            "Age": age,
-            "Gender": gender,
-            "Blood Pressure": f"{bp} mmHg",
-            "Diabetes": diabetes,
-            **({"Smoking": smoking_status} if smoking else {}),
-            "Liver Disease": liver_disease,
-            "Genetic Risk": gene_risk
-            },
-        "medications": [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()],
+    risk_percent = result["risk_percent"]
+    level = result["risk_level"]
+    recommendation = result["recommendation"]
+
+    st.session_state.prediction_result = {
+        "risk_probability": risk_percent / 100,
+        "risk_percent": risk_percent,
+        "risk_level": level,
+        "recommendation": recommendation,
         "selected_drugs": selected_drugs,
-        "name": name,
         "age": age,
         "bp": bp,
         "diabetes": diabetes,
@@ -781,8 +773,8 @@ if predict_btn:
         "family_history": family_history
     }
 
-    except Exception as e:
-        st.error(f"Error: {e}")
+except Exception as e:
+    st.error(f"Error: {e}")
 
 # Display stored prediction results
 if "prediction_result" in st.session_state and st.session_state.prediction_result:
