@@ -790,20 +790,23 @@ if predict_btn:
 if "prediction_result" in st.session_state and st.session_state.prediction_result:
     result = st.session_state.prediction_result
     
-    risk_probability = result.get("risk_probability", 0)
-    risk_percent = result["risk_percent"]
-    level = result["risk_level"]
-    recommendation = result["recommendation"]
-    patient_info = st.session_state.prediction_result["patient_info"]
-    medications = st.session_state.prediction_result["medications"]
-    selected_drugs = st.session_state.prediction_result["selected_drugs"]
-    age = st.session_state.prediction_result["age"]
-    bp = st.session_state.prediction_result["bp"]
-    diabetes = st.session_state.prediction_result["diabetes"]
-    smoking = st.session_state.prediction_result["smoking"]
-    liver_disease = st.session_state.prediction_result["liver_disease"]
-    gene_risk = st.session_state.prediction_result["gene_risk"]
-    family_history = st.session_state.prediction_result["family_history"]
+    st.session_state.prediction_result = {
+    "risk_probability": risk_percent / 100,
+    "risk_percent": risk_percent,
+    "risk_level": level,
+    "recommendation": recommendation,
+
+    "medications": [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()],
+
+    "selected_drugs": selected_drugs,
+    "age": age,
+    "bp": bp,
+    "diabetes": diabetes,
+    "smoking": smoking,
+    "liver_disease": liver_disease,
+    "gene_risk": gene_risk,
+    "family_history": family_history
+}
 
     color = "#16a34a" if level == "Low Risk" else "#f59e0b" if level == "Moderate Risk" else "#dc2626"
 
