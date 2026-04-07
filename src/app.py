@@ -752,29 +752,29 @@ if predict_btn:
     }
 
     try:
-    result = predict(payload)
+        result = predict(payload)
 
-    risk_percent = result["risk_percent"]
-    level = result["risk_level"]
-    recommendation = result["recommendation"]
+        risk_percent = result["risk_percent"]
+        level = result["risk_level"]
+        recommendation = result["recommendation"]
 
-    st.session_state.prediction_result = {
-        "risk_probability": risk_percent / 100,
-        "risk_percent": risk_percent,
-        "risk_level": level,
-        "recommendation": recommendation,
-        "selected_drugs": selected_drugs,
-        "age": age,
-        "bp": bp,
-        "diabetes": diabetes,
-        "smoking": smoking,
-        "liver_disease": liver_disease,
-        "gene_risk": gene_risk,
-        "family_history": family_history
+        st.session_state.prediction_result = {
+            "risk_probability": risk_percent / 100,
+            "risk_percent": risk_percent,
+            "risk_level": level,
+            "recommendation": recommendation,
+            "selected_drugs": selected_drugs,
+            "age": age,
+            "bp": bp,
+            "diabetes": diabetes,
+            "smoking": smoking,
+            "liver_disease": liver_disease,
+            "gene_risk": gene_risk,
+            "family_history": family_history
     }
 
-except Exception as e:
-    st.error(f"Error: {e}")
+    except Exception as e:
+        st.error(f"Error: {e}")
 
 # Display stored prediction results
 if "prediction_result" in st.session_state and st.session_state.prediction_result:
