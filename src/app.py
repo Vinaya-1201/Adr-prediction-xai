@@ -784,7 +784,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
     risk_percent = result["risk_percent"]
     level = result["risk_level"]
     recommendation = result["recommendation"]
-    patient_info = result["patient_info"]
+    patient_info = st.session_state.prediction_result["patient_info"]
     medications = result["medications"]
     selected_drugs = result["selected_drugs"]
     age = result["age"]
