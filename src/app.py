@@ -22,7 +22,7 @@ ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
 sys.path.insert(0, ROOT_DIR)
 
-from predict import predict
+from src.predict import predict
 # create data folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data_dir = os.path.join(BASE_DIR, "data")
