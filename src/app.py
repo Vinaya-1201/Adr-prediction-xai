@@ -15,12 +15,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 import gdown
 import sys
+import os
 
-
-CURRENT_DIR = os.path.dirname(__file__)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-sys.path.append(ROOT_DIR)
+sys.path.insert(0, ROOT_DIR)
 
 from backend.predict import predict
 # create data folder
