@@ -13,6 +13,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+import os
+import gdown
+
+# create data folder
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+data_dir = os.path.join(BASE_DIR, "data")
+os.makedirs(data_dir, exist_ok=True)
+
+# sider path
+sider_path = os.path.join(data_dir, "sider.csv")
+
+# download if missing
+if not os.path.exists(sider_path):
+    url = "https://drive.google.com/uc?id=1NjuGqaKElyeY-ovqTyEfr3xtXY-w7rY8"
+    gdown.download(url, sider_path, quiet=False)
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
