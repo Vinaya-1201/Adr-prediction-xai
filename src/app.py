@@ -875,7 +875,17 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
             
             # Add SHAP feature contribution graph
             st.markdown(" Patient Factor Contributions:")
-            st.plotly_chart(plot_shap_waterfall(shap_vals, drug_adjusted_risk, risk_percent), use_container_width=True)
+            total = sum(shap_vals.values())
+
+            normalized = {
+                k: (v / total) * 100
+                for k, v in shap_vals.items()
+            }
+
+            st.plotly_chart(
+               plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+            use_container_width=True
+            )
         
         else:
             # Multiple drugs - show tabs with SHAP analysis for each
@@ -911,4 +921,14 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                     
                     # Add SHAP feature contribution graph
                     st.markdown("Patient Factor Contributions :")
-                    st.plotly_chart(plot_shap_waterfall(shap_vals, drug_adjusted_risk, risk_percent), use_container_width=True)
+                    total = sum(shap_vals.values())
+
+                    normalized = {
+                        k: (v / total) * 100
+                        for k, v in shap_vals.items()
+                        }
+
+                    st.plotly_chart(
+                        plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+                        use_container_width=True
+                        )
