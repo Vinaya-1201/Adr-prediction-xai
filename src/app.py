@@ -764,6 +764,16 @@ if predict_btn:
             "risk_level": level,
             "recommendation": recommendation,
             "selected_drugs": selected_drugs,
+            "patient_info": {
+                "Name": name,
+                "Age": age,
+                "Gender": gender,
+                "Blood Pressure": f"{bp} mmHg",
+                "Diabetes": diabetes,
+                "Smoking": smoking_status,
+                "Liver Disease": liver_disease,
+                "Genetic Risk": gene_risk
+                },
             "age": age,
             "bp": bp,
             "diabetes": diabetes,
