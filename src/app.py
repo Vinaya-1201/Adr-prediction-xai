@@ -344,11 +344,8 @@ def calculate_drug_specific_shap(drug_name, age, bp, diabetes, smoking, liver_di
             shap_values[feature] = weights[feature] * (1 - feature_multipliers[feature] + 0.5)
     
     # Adjust drug risk based on feature interactions
-    # use model prediction instead of fake risk
-    if actual_risk_prob is not None:
-        adjusted_risk = actual_risk_prob
-    else:
-        adjusted_risk = base_drug_risk
+    adjusted_risk = base_drug_risk + sum(shap_values.values()) * 0.2
+    adjusted_risk = min(1.0, max(0, adjusted_risk))
 
     return shap_values, adjusted_risk
 
@@ -427,33 +424,11 @@ def get_drug_specific_info(drug_name):
         "disease_impacts": selected_diseases
     }
 
-def get_sider_diseases(drug_name):
-    try:
-        sider = pd.read_csv(sider_path)
 
-        drug_rows = sider[
-            sider["drug_name"].str.lower() == drug_name.lower()
-        ]
-
-        diseases = drug_rows["side_effect"].value_counts().head(6)
-
-        return [
-            {"disease": d, "base_weight": w}
-            for d, w in zip(diseases.index, diseases.values)
-        ]
-
-    except:
-        return None
 def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history, drug_adjusted_risk):
     """Return six disease-level impact percentages for a drug and patient profile."""
-    sider_diseases = get_sider_diseases(drug_name)
-
-    if sider_diseases:
-        disease_items = sider_diseases
-    else:
-        profile = get_drug_specific_info(drug_name)
-        disease_items = profile.get("disease_impacts", [])
-    
+    profile = DRUG_PROFILES.get(drug_name.lower(), get_drug_specific_info(drug_name))
+    disease_items = profile.get("disease_impacts", [])
 
     factor_multipliers = {
         "Age": 1.15 if age > 65 else 1.0,
@@ -709,8 +684,7 @@ smoking_status = st.radio("Smoking Status", ["Never", "Former", "Current"], hori
 smoking = smoking_status in ["Former", "Current"]
 liver_disease = st.radio("Liver Disease", ["No", "Yes"], horizontal=True) == "Yes"
 gene_risk = st.radio("Genetic Risk Factors", ["No", "Yes"], horizontal=True) == "Yes"
-family_history = st.radio("Family History of Drug Reaction", ["No", "Yes"], horizontal=True) == "Yes"
-
+family_history = False
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -754,24 +728,33 @@ if predict_btn:
     try:
         result = predict(payload)
 
-        risk_percent = result["risk_percent"]
-        level = result["risk_level"]
-        recommendation = result["recommendation"]
-
+            # Store in session state for persistence
         st.session_state.prediction_result = {
-            "risk_probability": risk_percent / 100,
-            "risk_percent": risk_percent,
-            "risk_level": level,
-            "recommendation": recommendation,
-            "selected_drugs": selected_drugs,
-            "age": age,
-            "bp": bp,
-            "diabetes": diabetes,
-            "smoking": smoking,
-            "liver_disease": liver_disease,
-            "gene_risk": gene_risk,
-            "family_history": family_history
-            }
+        "risk_probability": result.get("risk_probability", result["risk_percent"] / 100),
+        "risk_percent": result["risk_percent"],
+        "risk_level": result["risk_level"],
+        "recommendation": result["recommendation"],
+        "patient_info": {
+            "Name": name,
+            "Age": age,
+            "Gender": gender,
+            "Blood Pressure": f"{bp} mmHg",
+            "Diabetes": diabetes,
+            **({"Smoking": smoking_status} if smoking else {}),
+            "Liver Disease": liver_disease,
+            "Genetic Risk": gene_risk
+            },
+        "medications": [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()],
+        "selected_drugs": selected_drugs,
+        "name": name,
+        "age": age,
+        "bp": bp,
+        "diabetes": diabetes,
+        "smoking": smoking,
+        "liver_disease": liver_disease,
+        "gene_risk": gene_risk,
+        "family_history": family_history
+    }
 
     except Exception as e:
         st.error(f"Error: {e}")
@@ -780,23 +763,20 @@ if predict_btn:
 if "prediction_result" in st.session_state and st.session_state.prediction_result:
     result = st.session_state.prediction_result
     
-    st.session_state.prediction_result = {
-    "risk_probability": risk_percent / 100,
-    "risk_percent": risk_percent,
-    "risk_level": level,
-    "recommendation": recommendation,
-
-    "medications": [f"{drug} - {dose} mg" for drug, dose in drug_doses.items()],
-
-    "selected_drugs": selected_drugs,
-    "age": age,
-    "bp": bp,
-    "diabetes": diabetes,
-    "smoking": smoking,
-    "liver_disease": liver_disease,
-    "gene_risk": gene_risk,
-    "family_history": family_history
-}
+    risk_probability = result.get("risk_probability", 0)
+    risk_percent = result["risk_percent"]
+    level = result["risk_level"]
+    recommendation = result["recommendation"]
+    patient_info = result["patient_info"]
+    medications = result["medications"]
+    selected_drugs = result["selected_drugs"]
+    age = result["age"]
+    bp = result["bp"]
+    diabetes = result["diabetes"]
+    smoking = result["smoking"]
+    liver_disease = result["liver_disease"]
+    gene_risk = result["gene_risk"]
+    family_history = result["family_history"]
 
     color = "#16a34a" if level == "Low Risk" else "#f59e0b" if level == "Moderate Risk" else "#dc2626"
 
@@ -827,20 +807,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
             f"{item['disease']} ({item['impact_pct']:.1f}%)" for item in disease_impacts
         )
         drug_explanations.append(f"{drug}: {disease_summary}")
-    patient_info = {
-    "Name": name,
-    "Age": age,
-    "Gender": gender,
-    "Blood Pressure": f"{bp} mmHg",
-    "Diabetes": diabetes,
-    "Smoking": smoking_status,
-    "Liver Disease": liver_disease,
-    "Genetic Risk": gene_risk
-}
-    medications = [
-    f"{drug} - {dose} mg"
-    for drug, dose in drug_doses.items()
-]
+
     pdf_buffer = generate_pdf_report(
         patient_info,
         medications,
@@ -915,12 +882,11 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                 for k, v in shap_vals.items()
             }
 
-            per_drug_risk = risk_probability / len(selected_drugs)
-
-            shap_vals, drug_adjusted_risk = calculate_drug_specific_shap(
-            drug, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history,
-            actual_risk_prob=per_drug_risk
-            )
+            st.plotly_chart(
+    plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+    use_container_width=True,
+    key="shap_chart_1"
+)
         
         else:
             # Multiple drugs - show tabs with SHAP analysis for each
@@ -963,9 +929,8 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                         for k, v in shap_vals.items()
                         }
 
-                    per_drug_risk = risk_probability / len(selected_drugs)
-
-                    shap_vals, drug_adjusted_risk = calculate_drug_specific_shap(
-                    drug, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history,
-                    actual_risk_prob=per_drug_risk
-                    )
+                    st.plotly_chart(
+                        plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+    use_container_width=True,
+    key="shap_chart_2"
+)
