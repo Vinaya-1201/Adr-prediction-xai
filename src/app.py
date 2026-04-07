@@ -18,7 +18,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(__file__))
-
+from predict import predict
 # create data folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data_dir = os.path.join(BASE_DIR, "data")
