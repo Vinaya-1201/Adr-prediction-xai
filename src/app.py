@@ -755,6 +755,7 @@ if predict_btn:
         result = predict(payload)
 
         risk_percent = result["risk_percent"]
+        risk_probability = risk_percent / 100
         level = result["risk_level"]
         recommendation = result["recommendation"]
 
