@@ -838,7 +838,16 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
             f"{item['disease']} ({item['impact_pct']:.1f}%)" for item in disease_impacts
         )
         drug_explanations.append(f"{drug}: {disease_summary}")
-
+    patient_info = {
+    "Name": name,
+    "Age": age,
+    "Gender": gender,
+    "Blood Pressure": f"{bp} mmHg",
+    "Diabetes": diabetes,
+    "Smoking": smoking_status,
+    "Liver Disease": liver_disease,
+    "Genetic Risk": gene_risk
+}
     pdf_buffer = generate_pdf_report(
         patient_info,
         medications,
