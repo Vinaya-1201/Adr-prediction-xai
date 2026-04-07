@@ -764,16 +764,6 @@ if predict_btn:
             "risk_level": level,
             "recommendation": recommendation,
             "selected_drugs": selected_drugs,
-            "patient_info": {
-                "Name": name,
-                "Age": age,
-                "Gender": gender,
-                "Blood Pressure": f"{bp} mmHg",
-                "Diabetes": diabetes,
-                "Smoking": smoking_status,
-                "Liver Disease": liver_disease,
-                "Genetic Risk": gene_risk
-                },
             "age": age,
             "bp": bp,
             "diabetes": diabetes,
@@ -781,7 +771,7 @@ if predict_btn:
             "liver_disease": liver_disease,
             "gene_risk": gene_risk,
             "family_history": family_history
-    }
+            }
 
     except Exception as e:
         st.error(f"Error: {e}")
