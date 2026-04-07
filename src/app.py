@@ -344,8 +344,11 @@ def calculate_drug_specific_shap(drug_name, age, bp, diabetes, smoking, liver_di
             shap_values[feature] = weights[feature] * (1 - feature_multipliers[feature] + 0.5)
     
     # Adjust drug risk based on feature interactions
-    adjusted_risk = base_drug_risk + sum(shap_values.values()) * 0.2
-    adjusted_risk = min(1.0, max(0, adjusted_risk))
+    # use model prediction instead of fake risk
+    if actual_risk_prob is not None:
+        adjusted_risk = actual_risk_prob
+    else:
+        adjusted_risk = base_drug_risk
 
     return shap_values, adjusted_risk
 
