@@ -1,11 +1,9 @@
 streamlit
 pandas
 numpy
-torch
 scikit-learn
-networkx
+plotly
 matplotlib
-shap
-joblib
-gdown
 reportlab
+gdown
+requests
