@@ -883,9 +883,10 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
             }
 
             st.plotly_chart(
-               plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
-            use_container_width=True
-            )
+    plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+    use_container_width=True,
+    key="shap_chart_1"
+)
         
         else:
             # Multiple drugs - show tabs with SHAP analysis for each
@@ -929,6 +930,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
                         }
 
                     st.plotly_chart(
-                        plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
-                        use_container_width=True
-                        )
+    plot_shap_waterfall(normalized, drug_adjusted_risk, risk_percent),
+    use_container_width=True,
+    key="shap_chart_2"
+)
