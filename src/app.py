@@ -545,7 +545,7 @@ def plot_shap_waterfall(feature_data, drug_risk, risk_percent):
     }
     
     features = list(filtered_data.keys())
-    values = [filtered_data[f] * 100 for f in features]  # Convert to percentage contribution
+    values = [filtered_data[f] for f in features]  # Convert to percentage contribution
     
     fig = go.Figure()
     
