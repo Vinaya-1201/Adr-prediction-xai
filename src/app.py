@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import os
 import gdown
-
+from predict import predict
 # create data folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data_dir = os.path.join(BASE_DIR, "data")
