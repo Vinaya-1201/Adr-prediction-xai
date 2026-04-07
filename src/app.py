@@ -848,6 +848,10 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
     "Liver Disease": liver_disease,
     "Genetic Risk": gene_risk
 }
+    medications = [
+    f"{drug} - {dose} mg"
+    for drug, dose in drug_doses.items()
+]
     pdf_buffer = generate_pdf_report(
         patient_info,
         medications,
