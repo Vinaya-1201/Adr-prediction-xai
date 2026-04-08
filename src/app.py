@@ -193,7 +193,7 @@ def calculate_drug_specific_shap(drug_name, age, bp, diabetes, smoking, liver_di
     """Calculate SHAP values specific to a drug, normalized to actual model prediction"""
     
     # Base drug risk
-    base_drug_risk = DRUG_PROFILES.get(drug_name.lower(), {}).get("risk_level", 0.15)
+    base_drug_risk = 0.12 + (hash(drug_name) % 10) / 100
     
     # Feature interaction with drug (how patient factors affect this specific drug)
     feature_multipliers = {
