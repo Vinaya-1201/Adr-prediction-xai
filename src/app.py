@@ -709,7 +709,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
         if len(selected_drugs) == 1:
             # Single drug - show detailed SHAP analysis
             drug = selected_drugs[0]
-            drug_info = get_drug_specific_info(drug)
+            
             shap_vals, drug_adjusted_risk = calculate_drug_specific_shap(
                 drug, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history, 
                 actual_risk_prob=risk_probability
@@ -754,7 +754,7 @@ if "prediction_result" in st.session_state and st.session_state.prediction_resul
             tabs = st.tabs([drug for drug in selected_drugs])
             
             for idx, drug in enumerate(selected_drugs):
-                drug_info = get_drug_specific_info(drug)
+                
                 shap_vals, drug_adjusted_risk = calculate_drug_specific_shap(
                     drug, age, bp, diabetes, smoking, liver_disease, gene_risk, family_history,
                     actual_risk_prob=risk_probability
