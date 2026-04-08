@@ -433,13 +433,15 @@ def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_diseas
 
     top_effects = (
     drug_rows["side_effects"]
+    .astype(str)
+    .str.lower()
     .str.replace(" or ", ",", regex=False)
     .str.replace(";", ",", regex=False)
+    .str.replace(".", ",", regex=False)
     .str.split(",")
     .explode()
+    .astype(str)
     .str.strip()
-    .value_counts()
-    
 )
     # remove long sentences
     top_effects = top_effects[
