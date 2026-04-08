@@ -88,12 +88,12 @@ st.markdown("""
 }
 
 label {
-    font-size: 20px !important;
+    font-size: 30px !important;
     font-weight: 600 !important;
 }
 
 input {
-    font-size: 40px !important;
+    font-size: 20px !important;
 }
 
 .stRadio label {
