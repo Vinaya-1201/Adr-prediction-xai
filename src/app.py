@@ -135,7 +135,7 @@ def generate_shap_explanation(age, bp, diabetes, smoking, liver_disease, gene_ri
         feature_importance["Smoking Status"] = 0.25
     
     # Base ADR risk from drugs
-    drug_risk = sum([DRUG_PROFILES.get(drug.lower(), {}).get("risk_level", 0.15) for drug in selected_drugs])
+    drug_risk = sum([0.12 + (hash(d) % 10)/100 for d in selected_drugs])
     
     # Calculate normalized contributions
     feature_data = {}
