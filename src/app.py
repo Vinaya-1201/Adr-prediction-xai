@@ -439,7 +439,7 @@ def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_diseas
     .explode()
     .str.strip()
     .value_counts()
-    .head(6)
+    
 )
 
     disease_items = [
