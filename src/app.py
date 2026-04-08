@@ -441,7 +441,13 @@ def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_diseas
     .value_counts()
     
 )
+    # remove long sentences
+    top_effects = top_effects[
+    (top_effects.str.len() < 40) &
+    (~top_effects.str.contains("doctor|medicine|occur|effects|needed|although|rare"))
+    ]
 
+top_effects = top_effects.value_counts()
     disease_items = [
         {"disease": d, "base_weight": w, "key_factors": []}
         for d, w in zip(top_effects.index, top_effects.values)
