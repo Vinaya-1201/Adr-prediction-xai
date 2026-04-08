@@ -432,10 +432,15 @@ def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_diseas
     drug_rows = sider[sider["drug_name"].str.lower() == drug_name.lower()]
 
     top_effects = (
-        drug_rows["side_effects"]
-        .value_counts()
-        .head(6)
-    )
+    drug_rows["side_effects"]
+    .str.replace(" or ", ",", regex=False)
+    .str.replace(";", ",", regex=False)
+    .str.split(",")
+    .explode()
+    .str.strip()
+    .value_counts()
+    .head(6)
+)
 
     disease_items = [
         {"disease": d, "base_weight": w, "key_factors": []}
