@@ -442,7 +442,7 @@ def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_diseas
     .explode()
     .astype(str)
     .str.strip()
-    .head(5)
+    
 )
     # remove long sentences
     top_effects = top_effects[
