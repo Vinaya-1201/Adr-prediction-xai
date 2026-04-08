@@ -79,6 +79,27 @@ st.markdown("""
     border-radius: 20px;
     margin-top: 30px;
 }
+
+/* ADD BELOW */
+
+.section-title {
+    font-size: 42px;
+    font-weight: 700;
+}
+
+label {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+}
+
+input {
+    font-size: 18px !important;
+}
+
+.stRadio label {
+    font-size: 20px !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
