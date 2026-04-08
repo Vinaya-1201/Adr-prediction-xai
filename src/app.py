@@ -471,11 +471,7 @@ def get_drug_disease_impacts(drug_name, age, bp, diabetes, smoking, liver_diseas
 
     disease_impacts = []
     for item in disease_items:
-        multiplier = 1.0
-        for factor in item.get("key_factors", []):
-            multiplier *= factor_multipliers.get(factor, 1.0)
-
-        raw_score = item["base_weight"] * multiplier
+        raw_score = item["base_weight"] 
         disease_impacts.append({
             "disease": item["disease"],
             "raw_score": raw_score,
