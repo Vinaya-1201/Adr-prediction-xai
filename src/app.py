@@ -97,7 +97,7 @@ input {
 }
 
 .stRadio label {
-    font-size: 20px !important;
+    font-size: 30px !important;
 }
 
 </style>
