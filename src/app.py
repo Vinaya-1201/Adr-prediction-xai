@@ -159,18 +159,18 @@ def predict(payload):
     risk = 5
 
     risk += age * 0.2
-    risk += len(drugs) * 8
+    risk += len(drugs) * 15
 
     if diabetes:
-        risk += 10
+        risk += 18
     if smoking:
-        risk += 7
+        risk += 14
     if liver:
-        risk += 12
+        risk += 20
     if gene:
-        risk += 9
+        risk += 16
     if family:
-        risk += 6
+        risk += 12
 
     risk = min(int(risk), 95)
 
